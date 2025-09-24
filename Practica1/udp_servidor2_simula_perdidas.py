@@ -17,5 +17,8 @@ print(f"Servidor UDP escuchando en el puerto {puerto}")
 
 while True:
     data, direccion = servidor.recvfrom(1024)
-    print(f"Recibido {data.decode()} de {direccion}")
-    servidor.sendto(b"ACK", direccion)
+    if random.randint(0, 1) == 1:
+        print(f"Recibido {data.decode()} de {direccion}")
+        servidor.sendto(b"ACK", direccion)
+    else:   
+        print(f"Simulando perdida de paquete de {direccion}")

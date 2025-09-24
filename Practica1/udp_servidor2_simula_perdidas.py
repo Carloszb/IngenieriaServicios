@@ -1,7 +1,3 @@
-'''
-Modifica el servidor anterior para que, tras recibir el datagrama, decida aleatoriamente con una probabilidad del 50% si simulará no haberlo recibido. En este caso imprimirá en pantalla “Simulando paquete perdido”, en otro caso imprimirá en pantalla el contenido del datagrama tal como hacía antes. Para generar números aleatorios usar el módulo random, por ejemplo la función randint(). Guarda el programa con el nombre udp_servidor2_simula_perdidas.py.
-Ademas, comenta lo que hace cada cosa'''
-
 import socket
 import sys
 import random  # Importa el módulo random para generar números aleatorios

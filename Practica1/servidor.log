@@ -1,0 +1,6 @@
+nohup: ignoring input
+Traceback (most recent call last):
+  File "/home/uo288967/IngenieriaServicios/Practica1/udp_servidor3_con_ok.py", line 16, in <module>
+    sock.bind(('', puerto))  # Vincula el socket a todas las interfaces en el puerto
+    ^^^^^^^^^^^^^^^^^^^^^^^
+OSError: [Errno 98] Address already in use

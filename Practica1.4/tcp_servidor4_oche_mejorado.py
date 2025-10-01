@@ -48,9 +48,9 @@ def recibe_mensaje(socket_cliente):
             # Añadir el carácter al mensaje
             mensaje += char
             
-            # Verificar si hemos recibido una línea completa (\\r\\n)
-            if mensaje.endswith('\\r\\n'):
-                # Retornar la línea sin el \\r\\n
+            # Verificar si hemos recibido una línea completa (\r\n)
+            if mensaje.endswith('\r\n'):
+                # Retornar la línea sin el \r\n
                 return mensaje[:-2]
                 
     except socket.error as e:

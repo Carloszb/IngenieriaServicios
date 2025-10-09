@@ -1,10 +1,11 @@
 import socket
 import sys
+import time
 
 # --- Configuración del Puerto ---
 PUERTO_DEFECTO = 9999
 PUERTO = PUERTO_DEFECTO
-BUFFER_SIZE = 80 # Máximo de bytes a recibir en una lectura
+BUFFER_SIZE = 80
 
 # Obtener puerto de línea de comandos o usar defecto
 if len(sys.argv) > 1:
@@ -16,62 +17,50 @@ if len(sys.argv) > 1:
 else:
     print(f"No se especificó puerto. Usando puerto por defecto: {PUERTO_DEFECTO}")
 
-def recibe_mensaje(socket_cliente):
+def recibe_mensaje(sock):
     """
-    Recibe un mensaje completo del socket cliente leyendo byte a byte
-    hasta encontrar una línea completa (terminada en \\r\\n).
-    
-    Args:
-        socket_cliente: El socket del cliente del cual leer
-        
-    Returns:
-        str: La línea completa recibida (sin \\r\\n) o None si hay error/conexión cerrada
+    Recibe primero la longitud (ASCII, delimitada por '\n'), luego el mensaje de esa longitud
     """
-    mensaje = ""
-    
+    f = sock.makefile('rb')
+    # Leer la longitud
+    longitud_str = b''
+    while True:
+        c = f.read(1)
+        if not c:
+            return None
+        if c == b'\n':
+            break
+        longitud_str += c
     try:
-        while True:
-            # Leer un byte a la vez
-            byte = socket_cliente.recv(1)
-            
-            # Si no se recibe nada, el cliente cerró la conexión
-            if not byte:
-                return None
-                
-            # Convertir byte a carácter
-            try:
-                char = byte.decode('utf-8')
-            except UnicodeDecodeError:
-                # Si hay error de decodificación, ignorar este byte
-                continue
-                
-            # Añadir el carácter al mensaje
-            mensaje += char
-            
-            # Verificar si hemos recibido una línea completa (\\r\\n)
-            if mensaje.endswith('\\r\\n'):
-                # Retornar la línea sin el \\r\\n
-                return mensaje[:-2]
-                
-    except socket.error as e:
-        print(f"Error al recibir mensaje: {e}")
+        longitud = int(longitud_str.decode('utf8'))
+    except Exception:
         return None
+    # Leer el mensaje completo
+    mensaje_bytes = f.read(longitud)
+    if not mensaje_bytes or len(mensaje_bytes) < longitud:
+        return None
+    return mensaje_bytes.decode('utf8')
+
+def enviar_mensaje(sock, mensaje):
+    """
+    Envía la longitud en ASCII (con delimitador '\n') seguida del mensaje codificado en utf8
+    """
+    datos = mensaje.encode('utf8')
+    longitud = f"{len(datos)}\n"
+    sock.sendall(longitud.encode('utf8') + datos)
 
 # --- Creación del socket de escucha ---
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-# Asignarle puerto
 try:
     s.bind(("", PUERTO))
 except socket.error as e:
     print(f"Error al enlazar el socket: {e}")
     sys.exit(1)
 
-# Ponerlo en modo pasivo
 s.listen(5)
 print("Servidor listo y escuchando...")
 
-# --- Bucle principal de espera por clientes ---
 while True:
     print("\nEsperando un cliente...")
     try:
@@ -86,35 +75,15 @@ while True:
 
     print("Nuevo cliente conectado desde %s:%d" % origen)
     continuar = True
-    
-    # Bucle de atención al cliente conectado
+
     while continuar:
-        
-        # --- SERVICIO (Inicio de la parte del ejercicio) ---
-        
-        # Primero recibir el mensaje del cliente usando la función recibe_mensaje()
         linea = recibe_mensaje(sd)
-        
         if linea is None:
-            # Si recibe_mensaje() retorna None, el cliente cerró la conexión o hubo error
             print("Conexión cerrada por el cliente.")
             sd.close()
             continuar = False
             continue
-        
-        # Tercero, darle la vuelta
+        time.sleep(1)
         linea_invertida = linea[::-1]
-        
-        # Finalmente, enviar la respuesta con un fin de línea añadido
-        respuesta = linea_invertida + "\r\n"
         print(f"Recibido: '{linea}'. Enviando: '{linea_invertida}'")
-        
-        # Observa la transformación en bytes para enviarlos
-        try:
-            sd.sendall(respuesta.encode("utf8"))
-        except socket.error as e:
-            print(f"Error al enviar respuesta: {e}")
-            sd.close()
-            continuar = False
-            
-        # --- SERVICIO (Fin de la parte del ejercicio) ---
+        enviar_mensaje(sd, linea_invertida)

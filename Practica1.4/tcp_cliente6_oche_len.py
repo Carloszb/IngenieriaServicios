@@ -22,63 +22,62 @@ elif len(sys.argv) == 2:
 else:
     print(f"Usando por defecto: {IP_DEFECTO}:{PUERTO_DEFECTO}")
 
-def recibe_mensaje_largo(sock):
+def enviar_mensaje(sock, mensaje):
     """
-    Recibe un mensaje precedido por su longitud terminada en \\n.
+    Envía la longitud en ASCII (con delimitador '\n') seguida del mensaje codificado en utf8
     """
+    datos = mensaje.encode('utf8')
+    longitud = f"{len(datos)}\n"
+    sock.sendall(longitud.encode('utf8') + datos)
+
+def recibe_mensaje(sock):
+    """
+    Recibe primero la longitud (ASCII, delimitada por '\n'), luego el mensaje de esa longitud
+    """
+    f = sock.makefile('rb')
+    # Leer la longitud
+    longitud_str = b''
+    while True:
+        c = f.read(1)
+        if not c:
+            return None
+        if c == b'\n':
+            break
+        longitud_str += c
     try:
-        # Leer hasta el delimitador \\n para obtener la longitud
-        longitud_str = ""
-        while not longitud_str.endswith('\\n'):
-            byte = sock.recv(1)
-            if not byte:
-                return None
-            longitud_str += byte.decode('utf-8')
-        
-        longitud = int(longitud_str.strip())
-
-        # Recibir el resto del mensaje
-        mensaje = sock.recv(longitud).decode('utf-8')
-        return mensaje
-
-    except (socket.error, ValueError) as e:
-        print(f"Error al recibir mensaje largo: {e}")
+        longitud = int(longitud_str.decode('utf8'))
+    except Exception:
         return None
+    # Leer el mensaje completo
+    mensaje_bytes = f.read(longitud)
+    if not mensaje_bytes or len(mensaje_bytes) < longitud:
+        return None
+    return mensaje_bytes.decode('utf8')
 
 # --- Datos de prueba ---
 MENSAJES = [
-    "HOLA MUNDO!\r\n",
-    "PYTHON ES GENIAL.\r\n",
-    "1234567890\r\n",
-    "FINALIZAR\r\n"
+    "HOLA MUNDO!",
+    "PYTHON ES GENIAL.",
+    "1234567890",
+    "FINALIZAR"
 ]
 
 # --- Lógica del Cliente ---
 try:
-    # 1. Crear y Conectar Socket
     c = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     print(f"\nIntentando conectar a {IP_SERVIDOR}:{PUERTO_SERVIDOR}...")
     c.connect((IP_SERVIDOR, PUERTO_SERVIDOR))
     print("Conexión exitosa.")
 
-    # 2. Bucle de Envío y Recepción
     for mensaje in MENSAJES:
-        
-        # Enviar mensaje. Recordar que ya contiene "\r\n".
-        datos_a_enviar = mensaje.encode('utf8')
-        c.sendall(datos_a_enviar)
-        print(f"CLIENTE: Enviado: '{mensaje.strip()}'")
-
-        # Recibir la respuesta del servidor usando recibe_mensaje()
+        enviar_mensaje(c, mensaje)
+        print(f"CLIENTE: Enviado: '{mensaje}'")
         respuesta = recibe_mensaje(c)
-        
         if respuesta is None:
             print("CLIENTE: El servidor cerró la conexión inesperadamente.")
             break
-            
         print(f"CLIENTE: Recibido (invertido): '{respuesta}'")
-        
-    # 3. Cerrar Socket
+
     print("\nCLIENTE: Cerrando conexión.")
     c.close()
 

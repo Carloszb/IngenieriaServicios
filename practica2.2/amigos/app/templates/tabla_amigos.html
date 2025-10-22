@@ -1,4 +1,13 @@
 <html>
+    <style>
+      table {
+        border-collapse: collapse;
+      }
+      table, th, td {
+        border: 1px solid black;
+        padding: 5pt;
+      }
+    </style>
   <head>
     <meta charset="utf-8">
     <title>Amigos</title>
@@ -8,16 +17,22 @@
     <table>
       <!-- Cabecera de la tabla -->
       <tr>
+	<th>Id</th>
         <th>Nombre</th>
         <th>Latitud</th>
         <th>Longitud</th>
+	<th>Modificar</th>
+        <th>Borrar</th>	
       </tr>
       <!-- Cuerpo de la tabla -->
       {% for amigo in amigos %} {# Esto es sintaxis jinja2 #}
       <tr>
+	<td>{{amigo.id}}</td>
         <td>{{amigo.name}}</td>
         <td>{{amigo.lati}}</td>
         <td>{{amigo.longi}}</td>
+        <td><a href="/html/edit_amigo/{{amigo.id}}">Modificar</a></td>
+        <td><a href="/html/delete_amigo/{{amigo.id}}">Borrar</a></td>
       </tr>
       {% endfor %}
     </table>

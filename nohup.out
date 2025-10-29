@@ -1,0 +1,4 @@
+/home/uo288967/IngenieriaServicios/Practica3.1/telnet2_lanza_servidor.py:1: DeprecationWarning: 'telnetlib' is deprecated and slated for removal in Python 3.13
+  import telnetlib
+El servidor no está en ejecución. Lanzando servidor...
+Servidor lanzado correctamente.

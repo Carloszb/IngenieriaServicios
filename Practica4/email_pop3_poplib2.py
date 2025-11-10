@@ -10,7 +10,6 @@ print(f"Conectando a {server}:{port} ...")
 
 # Crear conexión POP3 con SSL
 pop3_mail = poplib.POP3_SSL(server, port)
-pop3_mail.set_debuglevel(2)  # Activa depuración del protocolo
 
 # Solicitar credenciales
 username = input("Usuario Gmail (con @gmail.com): ")
@@ -22,29 +21,30 @@ pop3_mail.pass_(password)
 
 # Consultar número de mensajes
 num_messages, total_size = pop3_mail.stat()
-print(f"\nNúmero de mensajes: {num_messages}, Tamaño total: {total_size} bytes\n")
+print(f"\nNúmero total de mensajes: {num_messages}, Tamaño total: {total_size} bytes\n")
 
 if num_messages == 0:
     print("No hay mensajes en el buzón.")
     pop3_mail.quit()
     exit()
 
-# Recorrer todos los mensajes
-for i in range(1, num_messages + 1):
-    print(f"--- Mensaje {i} ---")
-    response, lines, octets = pop3_mail.retr(i)
+# Procesar solo los 5 más recientes
+inicio = max(num_messages - 4, 1)
+fin = num_messages
 
-    # Unir todas las líneas en un solo bloque de bytes
-    raw_message = b"\r\n".join(lines)
+for i, msg_id in enumerate(range(fin, inicio - 1, -1), start=1):
+    print(f"--- Mensaje {i} de 5 (ID real: {msg_id}) ---")
+    try:
+        response, lines, octets = pop3_mail.retr(msg_id)
+        raw_message = b"\r\n".join(lines)
+        msg = message_from_bytes(raw_message)
 
-    # Crear objeto de mensaje a partir de los bytes
-    msg = message_from_bytes(raw_message)
-
-    # Mostrar resumen de cabeceras
-    print("From:", msg.get("From", "(sin remitente)"))
-    print("Subject:", msg.get("Subject", "(sin asunto)"))
-    print("Date:", msg.get("Date", "(sin fecha)"))
-    print()
+        print("From:", msg.get("From", "(sin remitente)"))
+        print("Subject:", msg.get("Subject", "(sin asunto)"))
+        print("Date:", msg.get("Date", "(sin fecha)"))
+        print()
+    except Exception as e:
+        print(f"Error al leer el mensaje {msg_id}: {e}\n")
 
 # Cerrar la sesión
 pop3_mail.quit()

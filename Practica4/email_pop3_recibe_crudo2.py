@@ -58,17 +58,26 @@ if num_msgs == 0:
 
 print(f"Hay {num_msgs} mensajes disponibles.\n")
 
-# Bucle para recorrer todos los mensajes
-for i in range(1, num_msgs + 1):
-    print(f"--- Mensaje {i} ---")
+# Procesar los 5 más recientes
+inicio = max(num_msgs - 4, 1)
+fin = num_msgs
+
+for i in range(fin, inicio - 1, -1):
+    print(f"--- Mensaje {i - inicio + 1} de 5 (ID real: {i}) ---")
     sc.sendall(f"RETR {i}\r\n".encode())
 
+    sc.settimeout(10)
     mensaje = b""
-    while True:
-        parte = sc.recv(1024)
-        mensaje += parte
-        if b"\r\n.\r\n" in mensaje:
-            break
+    try:
+        while True:
+            parte = sc.recv(4096)
+            if not parte:
+                break
+            mensaje += parte
+            if b"\r\n.\r\n" in mensaje:
+                break
+    except socket.timeout:
+        print(f"(Advertencia) Tiempo de espera agotado al leer el mensaje {i}")
 
     texto = mensaje.decode(errors="ignore")
     lineas = texto.split("\r\n")

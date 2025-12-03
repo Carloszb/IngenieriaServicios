@@ -46,4 +46,14 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+
+    // ViewModel
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.1")
+    // LiveData
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.8.1")
+    // Activity KTX (para la sintaxis 'by viewModels')
+    implementation("androidx.activity:activity-ktx:1.9.0")
 }

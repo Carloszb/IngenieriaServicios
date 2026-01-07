@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  basedatos:
+    image: mariadb
+    container_name: basedatos
+    environment:
+      MYSQL_ROOT_PASSWORD: claveroot
+      MYSQL_USER: amigosuser
+      MYSQL_DATABASE: amigosdb
+      MYSQL_PASSWORD: amigospass
+    volumes:
+      - ./basedatos:/var/lib/mysql
+    networks:
+      - pruebas
+
+  amigos:
+    image: amigos:1.0
+    container_name: amigos
+    environment:
+      DEPLOYMENT_MODE: production
+      DATABASE_URI: mysql+pymysql://amigosuser:amigospass@basedatos/amigosdb
+    networks:
+      - pruebas
+    depends_on:
+      - basedatos
+
+  nginx:
+    image: nginx
+    container_name: nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./sitios_nginx:/etc/nginx/conf.d
+    networks:
+      - pruebas
+    depends_on:
+      - amigos
+
+networks:
+  pruebas:
+    driver: bridge

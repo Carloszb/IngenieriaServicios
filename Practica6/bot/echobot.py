@@ -41,8 +41,6 @@ class MiBot(ClientXMPP):
                     # Extraer la expresión (quitando el '=')
                     expresion = cuerpo[1:]
                     try:
-                        # ADVERTENCIA: eval() es peligroso en producción, 
-                        # pero aceptable para este ejercicio práctico.
                         resultado = str(eval(expresion))
                         cuerpo_respuesta = f"Resultado: {resultado}"
                     except Exception as e:

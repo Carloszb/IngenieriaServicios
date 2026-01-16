@@ -15,14 +15,11 @@ services:
       - pruebas
 
   amigos:
-    # AQUÍ ESTÁ EL CAMBIO IMPORTANTE: Usamos la nueva imagen con FCM
-    image: amigos:fcm
+    image: amigos:1.0
     container_name: amigos
     environment:
       DEPLOYMENT_MODE: production
       DATABASE_URI: mysql+pymysql://amigosuser:amigospass@basedatos/amigosdb
-      # Esto permite ver los logs de Python en tiempo real
-      PYTHONUNBUFFERED: 1
     networks:
       - pruebas
     depends_on:
